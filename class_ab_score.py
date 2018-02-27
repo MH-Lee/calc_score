@@ -148,46 +148,16 @@ class Calculate_absolute_score(self):
             market_defacto['etc_corporate_tvalue'] = [3 if x>=3 else x for x in market_defacto['etc_corporate_tvalue']]
             market_defacto.drop('close_price', axis=1, inplace=True)
 
-            ih_Q0 = np.percentile(market_defacto['institution_height'], 0)
-            ih_Q1 = np.percentile(market_defacto['institution_height'], 25)
-            ih_Q2 = np.percentile(market_defacto['institution_height'], 50)
-            ih_Q3 = np.percentile(market_defacto['institution_height'], 75)
-            ip_Q0 = np.percentile(market_defacto['institution_purity'], 0)
-            ip_Q1 = np.percentile(market_defacto['institution_purity'], 25)
-            ip_Q2 = np.percentile(market_defacto['institution_purity'], 50)
-            ip_Q3 = np.percentile(market_defacto['institution_purity'], 75)
-            ic_Q0 = np.percentile(market_defacto['institution_coef'], 0)
-            ic_Q1 = np.percentile(market_defacto['institution_coef'], 25)
-            ic_Q2 = np.percentile(market_defacto['institution_coef'], 50)
-            ic_Q3 = np.percentile(market_defacto['institution_coef'], 75)
-            itv_Q0 = np.percentile(market_defacto['institution_tvalue'], 0)
-            itv_Q1 = np.percentile(market_defacto['institution_tvalue'], 25)
-            itv_Q2 = np.percentile(market_defacto['institution_tvalue'], 50)
-            itv_Q3 = np.percentile(market_defacto['institution_tvalue'], 75)
-
-            fh_Q0 = np.percentile(market_defacto['foreign_retail_height'], 0)
-            fh_Q1 = np.percentile(market_defacto['foreign_retail_height'], 25)
-            fh_Q2 = np.percentile(market_defacto['foreign_retail_height'], 50)
-            fh_Q3 = np.percentile(market_defacto['foreign_retail_height'], 75)
-            fc_Q0 = np.percentile(market_defacto['foreign_retail_coef'], 0)
-            fc_Q1 = np.percentile(market_defacto['foreign_retail_coef'], 25)
-            fc_Q2 = np.percentile(market_defacto['foreign_retail_coef'], 50)
-            fc_Q3 = np.percentile(market_defacto['foreign_retail_coef'], 75)
-            ftv_Q0 = np.percentile(market_defacto['foreign_retail_tvalue'], 0)
-            ftv_Q1 = np.percentile(market_defacto['foreign_retail_tvalue'], 25)
-            ftv_Q2 = np.percentile(market_defacto['foreign_retail_tvalue'], 50)
-            ftv_Q3 = np.percentile(market_defacto['foreign_retail_tvalue'], 75)
-
-            market_defacto['institution_section'] = np.where(market_defacto['institution_height']>ih_Q3,4,np.where(market_defacto['institution_height']>ih_Q2,3,np.where(market_defacto['institution_height']>ih_Q1,2,1)))
-            market_defacto['foreign_retail_section'] = np.where(market_defacto['foreign_retail_height']>ip_Q3,4,np.where(market_defacto['foreign_retail_height']>ip_Q2,3,np.where(market_defacto['foreign_retail_height']>ip_Q1,2,1)))
-            market_defacto['institution_proportion_section'] = np.where(market_defacto['institution_proportion']>ih_Q3,4,np.where(market_defacto['institution_proportion']>ih_Q2,3,np.where(market_defacto['institution_proportion']>ih_Q1,2,1)))
-            market_defacto['foreign_retail_proportion_section'] = np.where(market_defacto['foreign_retail_proportion']>ip_Q3,4,np.where(market_defacto['foreign_retail_proportion']>ip_Q2,3,np.where(market_defacto['foreign_retail_proportion']>ip_Q1,2,1)))
-            market_defacto['institution_tvalue_section'] = np.where(market_defacto['institution_tvalue']>ih_Q3,2,np.where(market_defacto['institution_tvalue']>ih_Q2,1.5,np.where(market_defacto['institution_tvalue']>ih_Q1,1,0.5)))
-            market_defacto['foreign_retail_tvalue_section'] = np.where(market_defacto['foreign_retail_tvalue']>ip_Q3,2,np.where(market_defacto['foreign_retail_tvalue']>ip_Q2,1.5,np.where(market_defacto['foreign_retail_tvalue']>ip_Q1,1,0.5)))
-            market_defacto['institution_coef_section'] = np.where(market_defacto['institution_coef']>ih_Q3,2,np.where(market_defacto['institution_coef']>ih_Q2,1.5,np.where(market_defacto['institution_coef']>ih_Q1,1,0.5)))
-            market_defacto['foreign_retail_coef_section'] = np.where(market_defacto['foreign_retail_coef']>ip_Q3,2,np.where(market_defacto['foreign_retail_coef']>ip_Q2,1.5,np.where(market_defacto['foreign_retail_coef']>ip_Q1,1,0.5)))
-            market_defacto['institution_purity_section'] = np.where(market_defacto['institution_purity']>ip_Q3,1,np.where(market_defacto['institution_purity']>ip_Q2,0.75,np.where(market_defacto['institution_purity']>ip_Q1,1,0.5)))
-
+            for column in ['institution', 'foreign_retail']:
+                bins = np.linspace(total_df.loc[column+'_height'].min(), total_df.loc[column+'_height'].max(), 4)
+                market_defacto[column+'_section'] = np.digitize(market_defacto[column+'_height'], bins)
+                bins = np.linspace(total_df.loc[column+'_tvalue'].min(), total_df.loc[column+'_tvalue'].max(), 4)
+                market_defacto[column+'_tvalue_section'] = np.digitize(market_defacto[column+'_tvalue'], bins)
+                bins = np.linspace(total_df.loc[column+'_coef'].min(), total_df.loc[column+'_coef'].max(), 4)
+                market_defacto[column+'_coef_section'] = np.digitize(market_defacto[column+'_coef'], bins)
+            bins = np.linspace(total_df.loc['institution_purity'].min(), total_df.loc['institution_purity'].max(), 4)
+            market_defacto['institution_purity_section'] = np.digitize(market_defacto['institution_purity'], bins)
+            
             market_defacto['institution_score'] = (market_defacto['institution_section'] + market_defacto['institution_proportion_section'] + market_defacto['institution_coef_section'] + market_defacto['institution_tvalue_section'])*market_defacto['institution_purity_section']
             market_defacto['foreign_retail_score'] = market_defacto['foreign_retail_section'] + market_defacto['foreign_retail_proportion_section'] + market_defacto['foreign_retail_coef_section'] + market_defacto['institution_tvalue_section']
             market_defacto['absolute_score'] = market_defacto['institution_score'] + market_defacto['foreign_retail_score']
